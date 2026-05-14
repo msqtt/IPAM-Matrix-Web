@@ -7,18 +7,29 @@ export function CommitModal({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const { commitToGitlab, data, remoteData } = useIPAM();
   const [message, setMessage] = useState(() => {
-    const today = new Date().toLocaleDateString();
-    let additions = 0;
-    let deletions = 0;
+    const today = new Date().toLocaleString();
+    let msg = `Update IPAM records - ${today}\n\n`;
+
     if (remoteData) {
-      additions = Math.max(0, data.allocations.length - remoteData.allocations.length);
-      deletions = Math.max(0, remoteData.allocations.length - data.allocations.length);
+      const addedBases = data.baseNetworks.filter(b => !remoteData.baseNetworks.some(rb => rb.cidr === b.cidr));
+      const removedBases = remoteData.baseNetworks.filter(rb => !data.baseNetworks.some(b => b.cidr === rb.cidr));
+      const addedAllocs = data.allocations.filter(a => !remoteData.allocations.some(ra => ra.id === a.id));
+      const removedAllocs = remoteData.allocations.filter(ra => !data.allocations.some(a => a.id === ra.id));
+
+      if (addedBases.length > 0) msg += `Added Base Networks: ${addedBases.map(b => b.cidr).join(', ')}\n`;
+      if (removedBases.length > 0) msg += `Removed Base Networks: ${removedBases.map(b => b.cidr).join(', ')}\n`;
+      if (addedAllocs.length > 0) msg += `Added Allocations: ${addedAllocs.map(a => a.cidr).join(', ')}\n`;
+      if (removedAllocs.length > 0) msg += `Removed Allocations: ${removedAllocs.map(a => a.cidr).join(', ')}\n`;
+      
+      if (!addedBases.length && !removedBases.length && !addedAllocs.length && !removedAllocs.length) {
+         msg += `Modified existing records.\n`;
+      }
+    } else {
+      msg += `Initial commit or sync from Web UI.\n`;
     }
-    let defaultMsg = `Update IPAM records [${today}]`;
-    if (additions || deletions) {
-      defaultMsg += ` (+${additions} / -${deletions} allocations)`;
-    }
-    return defaultMsg;
+
+    msg += `\nOperator: System User`;
+    return msg.trim();
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);

@@ -35,11 +35,7 @@ interface IPAMContextType {
 }
 
 const defaultData: IPAMData = {
-  baseNetworks: [
-    { cidr: '172.16.0.0/12', description: 'Office Network' },
-    { cidr: '10.133.0.0/16', description: 'Cloud Services' },
-    { cidr: '10.240.0.0/12', description: 'Data Center' }
-  ],
+  baseNetworks: [],
   allocations: []
 };
 
@@ -237,8 +233,8 @@ export function IPAMProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <IPAMContext.Provider value={{
-      data, isLoading, error, gitlabConfig, setGitlabConfig: handleSetGitlabConfig,
-      addAllocation, addAllocations, updateAllocation, removeAllocation, addBaseNetwork, updateBaseNetwork, removeBaseNetwork, importData, refresh
+      data, remoteData, isLoading, error, gitlabConfig, setGitlabConfig: handleSetGitlabConfig,
+      addAllocation, addAllocations, updateAllocation, removeAllocation, addBaseNetwork, updateBaseNetwork, removeBaseNetwork, importData, refresh, commitToGitlab, rollbackToVersion, getCommits
     }}>
       {children}
     </IPAMContext.Provider>
